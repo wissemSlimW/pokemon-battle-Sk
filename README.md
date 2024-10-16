@@ -1,38 +1,36 @@
-# create-svelte
+Project Setup
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+This guide will walk you through setting up and running the project locally.
 
-## Creating a project
+\*\*Prerequisites
 
-If you're seeing this, you've probably already done this step. Congrats!
+-Docker installed and running
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
 
-# create a new project in my-app
-npm create svelte@latest my-app
-```
+\*\*Database Setup
 
-## Developing
+The project uses PostgreSQL for the database. You can launch a PostgreSQL instance using Docker:
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+-Pull and run the Docker image.
 
-```bash
-npm run dev
+-After the instance is running, configure the database connection string in the backend by editing back/config/db.ts.
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
 
-## Building
 
-To create a production version of your app:
+\*\*App Setup
 
-```bash
-npm run build
-```
+To install and start the  application:
 
-You can preview the production build with `npm run preview`.
+-Install the dependencies:
 
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+npm install
+
+- If you like to set up a database with preset  data:
+ uncomment  line 37 on file db located at 'src/lib/db/db.ts'
+"// await seedDb(); // Uncomment to seed the database"
+
+-Start the frontend server:
+
+npm run dev 
+
+===>The application will open in your browser at http://localhost:5173.

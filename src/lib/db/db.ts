@@ -7,6 +7,12 @@ import { createInsertManyQuery } from '$lib/utils';
 import type { Id } from '$lib/types/model';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import {
+	pokemonService,
+	pokemonTypesService,
+	teamsService,
+	weaknessesService
+} from '$lib/services';
 
 const { Pool } = pkg;
 
@@ -34,7 +40,7 @@ export const createDatabase = async () => {
 			console.log("Database 'pokemon' already exists");
 		}
 		await db(); // Initialize the database schema
-		// await seedDb(); // Uncomment to seed the database
+		await seedDb(); // Uncomment to seed the database
 	} catch (err) {
 		console.error('Error creating the database', err);
 		throw err;
@@ -53,37 +59,46 @@ const pool = new Pool({
 const seedDb = async () => {
 	const client = await pool.connect();
 	try {
-		await client.query(
-			createInsertManyQuery<Omit<PokemonType, 'id'>>('pokemon_types', ['name'], POKEMON_TYPES)
-		);
-		await client.query(
-			createInsertManyQuery<Omit<Pokemon, 'id'>>(
-				'pokemon',
-				['name', 'image', 'life', 'power', 'type'],
-				POKEMON
-			)
-		);
-		await client.query(
-			createInsertManyQuery<Omit<Weakness, 'id'>>(
-				'weaknesses',
-				['factor', 'type1', 'type2'],
-				WEAKNESSES
-			)
-		);
-		const result = await client.query(
-			createInsertManyQuery<Omit<Team, 'id'>>('teams', ['name'], TEAMS)
-		);
-		for (const team of result.rows) {
+		const pktypes = await pokemonTypesService.findAll();
+		if (!pktypes.length)
 			await client.query(
-				createInsertManyQuery<Omit<PokemonTeam, 'id'>>(
-					'pokemon_teams',
-					['team', 'pokemon'],
-					TEAMS.find((t) => t.name === team.name)!.pokemonIds!.map((id: Id) => ({
-						team: team.id!,
-						pokemon: id
-					}))
+				createInsertManyQuery<Omit<PokemonType, 'id'>>('pokemon_types', ['name'], POKEMON_TYPES)
+			);
+		const pk = await pokemonService.findAll();
+		if (!pk.length)
+			await client.query(
+				createInsertManyQuery<Omit<Pokemon, 'id'>>(
+					'pokemon',
+					['name', 'image', 'life', 'power', 'type'],
+					POKEMON
 				)
 			);
+		const wk = await weaknessesService.findAll();
+		if (!wk.length)
+			await client.query(
+				createInsertManyQuery<Omit<Weakness, 'id'>>(
+					'weaknesses',
+					['factor', 'type1', 'type2'],
+					WEAKNESSES
+				)
+			);
+		const t = await teamsService.findAll();
+		if (!t.length) {
+			const result = await client.query(
+				createInsertManyQuery<Omit<Team, 'id'>>('teams', ['name'], TEAMS)
+			);
+			for (const team of result.rows) {
+				await client.query(
+					createInsertManyQuery<Omit<PokemonTeam, 'id'>>(
+						'pokemon_teams',
+						['team', 'pokemon'],
+						TEAMS.find((t) => t.name === team.name)!.pokemonIds!.map((id: Id) => ({
+							team: team.id!,
+							pokemon: id
+						}))
+					)
+				);
+			}
 		}
 		console.log('Database seeded');
 	} catch (err) {
