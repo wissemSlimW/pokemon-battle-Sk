@@ -1,0 +1,15 @@
+<script>
+	import './style.css';
+	export let isActive = true;
+	export let isInCombat = false;
+	export let imgUrl = '';
+</script>
+
+<div class="avatar-container" class:deactivated={!isActive}>
+	<img
+		class="rounded-circle w-100 h-100 overflow-hidden border-primary"
+		class:outlined={isInCombat}
+		src={imgUrl}
+		alt="pokemon-avatar"
+	/>
+</div>
